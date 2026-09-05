@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: stg_inventory
+    description: Inventory staging model sourced from dbo.PBI_INVENTORY.
+
+    columns:
+      - name: ITEM_ID
+        description: Inventory item identifier.
+        data_tests:
+          - not_null
+
+      - name: LEGAL_ENTITY
+        description: Legal entity associated with the inventory record.
+        data_tests:
+          - not_null
+
+      - name: SITE_ID
+        description: Inventory site identifier.
+        data_tests:
+          - not_null

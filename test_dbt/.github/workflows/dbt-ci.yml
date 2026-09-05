@@ -1,0 +1,88 @@
+name: dbt CI
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-dbt:
+    name: Validate dbt project
+
+    runs-on:
+      - self-hosted
+      - Windows
+      - X64
+
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify existing dbt installation
+        shell: powershell
+        run: |
+          $dbt = "C:\Users\btrent\OneDrive - The Reliable Automatic Sprinkler Co., Inc\Documents\dbt\venv\Scripts\dbt.exe"
+
+          if (-not (Test-Path $dbt)) {
+            throw "dbt executable was not found at $dbt"
+          }
+
+          & $dbt --version
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "dbt version check failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Parse dbt project
+        shell: powershell
+        run: |
+          $dbt = "C:\Users\btrent\OneDrive - The Reliable Automatic Sprinkler Co., Inc\Documents\dbt\venv\Scripts\dbt.exe"
+
+          & $dbt parse --project-dir "${{ github.workspace }}"
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "dbt parse failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Validate SQL Server connection
+        shell: powershell
+        run: |
+          $dbt = "C:\Users\btrent\OneDrive - The Reliable Automatic Sprinkler Co., Inc\Documents\dbt\venv\Scripts\dbt.exe"
+          $profilesDir = "C:\Users\btrent\.dbt"
+
+          if (-not (Test-Path "$profilesDir\profiles.yml")) {
+            throw "profiles.yml was not found in $profilesDir"
+          }
+
+          & $dbt debug `
+            --project-dir "${{ github.workspace }}" `
+            --profiles-dir $profilesDir
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "dbt debug failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Build models and run data tests
+        shell: powershell
+        run: |
+          $dbt = "C:\Users\btrent\OneDrive - The Reliable Automatic Sprinkler Co., Inc\Documents\dbt\venv\Scripts\dbt.exe"
+          $profilesDir = "C:\Users\btrent\.dbt"
+
+          & $dbt build `
+            --project-dir "${{ github.workspace }}" `
+            --profiles-dir $profilesDir
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "dbt build failed with exit code $LASTEXITCODE"
+          }

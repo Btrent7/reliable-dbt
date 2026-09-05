@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: pbi
+    schema: dbo
+
+    tables:
+      - name: PBI_INVENTORY
+      - name: PBI_ITEM_MASTER
+      - name: PBI_PO
+      - name: PBI_SALES
+      - name: PBI_VENDOR_MASTER
