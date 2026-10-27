@@ -1,0 +1,224 @@
+version: 2
+
+models:
+
+  - name: int_asi400__purchasing
+    description: >
+      Intermediate AS400 purchasing model combining qualifying
+      purchase-order lines, purchase-order headers, voucher details,
+      voucher headers, item attributes, and legacy date mappings.
+
+      The model applies purchasing business scope before exposing
+      transactions downstream. It retains RSLE items, received
+      purchase-order lines, non-MFG warehouse activity, non-cancelled
+      item records, and purchase orders with mapped issue dates in
+      calendar year 2025 or later.
+
+      Source profiling identified that the previous purchasing query used
+      incomplete join predicates capable of multiplying voucher-detail
+      transactions. This model instead relates purchase-order lines to
+      headers by purchase order and release, voucher details to purchase
+      order lines by purchase order, release, PO line, and item, and
+      voucher details to voucher headers by voucher number.
+
+      Secondary legacy date keys are preserved even when no calendar-date
+      mapping exists so that unmapped dates remain auditable rather than
+      causing otherwise valid transactions to be removed.
+
+    columns:
+      - name: po_number
+        description: Purchase order number.
+
+      - name: release_number
+        description: Purchase-order release number.
+
+      - name: po_line_number
+        description: Purchase-order line number.
+
+      - name: item_number
+        description: Item associated with the purchase transaction.
+
+      - name: item_description
+        description: Item description from the staged item master.
+
+      - name: item_class_code
+        description: >
+          Item classification. The intermediate purchasing population
+          retains RSLE items.
+
+      - name: product_group
+        description: Product group associated with the item.
+
+      - name: product_category
+        description: Product category associated with the item.
+
+      - name: commodity_code
+        description: Commodity code associated with the item.
+
+      - name: vendor_id
+        description: Vendor identifier associated with the purchase-order line.
+
+      - name: vendor_suffix
+        description: Vendor suffix associated with the purchase-order line.
+
+      - name: warehouse
+        description: >
+          Warehouse associated with the purchase-order line. MFG records
+          are excluded from this analytical purchasing population.
+
+      - name: po_type
+        description: Purchase-order type supplied by the PO header.
+
+      - name: po_status_code
+        description: Purchase-order status code supplied by the PO header.
+
+      - name: buyer_id
+        description: Buyer identifier supplied by the PO header.
+
+      - name: issued_date_key
+        description: Legacy source purchase-order issue-date key.
+
+      - name: date_issued
+        description: >
+          Calendar issue date mapped through the existing date dimension.
+          Issue-date mapping is required because calendar year defines the
+          reporting scope.
+
+      - name: received_date_key
+        description: Legacy source receipt-date key retained for reconciliation.
+
+      - name: date_received
+        description: >
+          Calendar receipt date when received_date_key successfully maps
+          through the existing date dimension.
+
+      - name: invoice_date_key
+        description: Legacy source invoice-date key retained for reconciliation.
+
+      - name: date_invoiced
+        description: >
+          Calendar invoice date when invoice_date_key successfully maps
+          through the existing date dimension.
+
+      - name: voucher_date_key
+        description: Legacy source voucher-date key retained for reconciliation.
+
+      - name: date_vouchered
+        description: >
+          Calendar voucher date when voucher_date_key successfully maps
+          through the existing date dimension.
+
+      - name: paid_date_key
+        description: Legacy source paid-date key retained for reconciliation.
+
+      - name: date_paid
+        description: >
+          Calendar paid date when paid_date_key successfully maps through
+          the existing date dimension.
+
+      - name: is_received_date_mapped
+        description: >
+          Indicator equal to 1 when received_date_key matched a date
+          dimension record and 0 otherwise.
+
+      - name: is_invoice_date_mapped
+        description: >
+          Indicator equal to 1 when invoice_date_key matched a date
+          dimension record and 0 otherwise.
+
+      - name: is_voucher_date_mapped
+        description: >
+          Indicator equal to 1 when voucher_date_key matched a date
+          dimension record and 0 otherwise.
+
+      - name: is_paid_date_mapped
+        description: >
+          Indicator equal to 1 when paid_date_key matched a date
+          dimension record and 0 otherwise.
+
+      - name: unit_price
+        description: Purchase-order line unit price.
+
+      - name: authorized_quantity
+        description: Authorized quantity from the purchase-order line.
+
+      - name: received_quantity
+        description: Received quantity from the purchase-order line.
+
+      - name: vouched_quantity
+        description: Vouched quantity from the purchase-order line.
+
+      - name: cancelled_quantity
+        description: Cancelled quantity from the purchase-order line.
+
+      - name: unit_of_measure
+        description: Purchase-order line unit of measure.
+
+      - name: voucher_number
+        description: Voucher associated with the voucher-detail transaction.
+
+      - name: voucher_line_number
+        description: Voucher detail line number.
+
+      - name: copy_sequence_number
+        description: Source voucher-detail copy-sequence number.
+
+      - name: vendor_item_number
+        description: Vendor item identifier supplied by the voucher detail.
+
+      - name: voucher_item_quantity
+        description: Item quantity associated with the voucher detail.
+
+      - name: voucher_unit_of_measure
+        description: Unit of measure associated with the voucher detail.
+
+      - name: voucher_item_unit_price
+        description: Item unit price associated with the voucher detail.
+
+      - name: item_gross_amount
+        description: Gross item amount stored on the source voucher detail.
+
+      - name: freight_amount
+        description: Freight amount stored on the voucher detail.
+
+      - name: tax_amount
+        description: Tax amount stored on the voucher detail.
+
+      - name: discount_amount
+        description: Discount amount stored on the voucher detail.
+
+      - name: detail_net_amount
+        description: Net/detail amount stored on the voucher detail.
+
+      - name: invoice_number
+        description: Invoice identifier supplied by the voucher header.
+
+      - name: invoice_item_amount
+        description: Item amount supplied by the voucher header.
+
+      - name: invoice_freight_amount
+        description: Freight amount supplied by the voucher header.
+
+      - name: invoice_tax_amount
+        description: Tax amount supplied by the voucher header.
+
+      - name: invoice_discount_amount
+        description: Discount amount supplied by the voucher header.
+
+      - name: check_amount
+        description: Check amount supplied by the voucher header.
+
+      - name: accounting_period
+        description: Accounting period supplied by the voucher header.
+
+      - name: item_charge_to_indicator
+        description: Source item charge-to indicator.
+
+      - name: item_charge_to_account
+        description: Source item charge-to account.
+
+      - name: po_line_status
+        description: Source status associated with the purchase-order line.
+
+      - name: voucher_line_status
+        description: Source status associated with the voucher detail.

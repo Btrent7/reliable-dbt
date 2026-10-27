@@ -1,0 +1,42 @@
+version: 2
+
+sources:
+  - name: asi400
+    description: >
+      Legacy AS400-origin operational data available in the
+      SYSCOMP SQL Server database. These source tables support
+      historical purchasing transformations in this dbt project.
+
+    database: SYSCOMP
+    schema: dbo
+
+    tables:
+      - name: DPMORDM3
+        description: >
+          Purchase order line source containing item, warehouse,
+          vendor, quantity, pricing, receipt, and purchasing attributes.
+
+      - name: DPMORDM0
+        description: >
+          Purchase order header source containing purchase order type,
+          status, vendor, buyer, date, and order-level attributes.
+
+      - name: DPHVCH1
+        description: >
+          Voucher header source containing purchase order, vendor,
+          invoice, voucher, payment, and accounting attributes.
+
+      - name: DPHVCH3
+        description: >
+          Voucher line source containing purchase order item quantities,
+          pricing, charges, and voucher-line attributes.
+
+      - name: DimDate
+        description: >
+          Existing date dimension used to map legacy integer date keys
+          to SQL Server calendar dates and related calendar attributes.
+
+      - name: DCSCIM
+        description: >
+          Item master source containing item classification, vendor,
+          cost, product, purchasing, and inventory attributes.

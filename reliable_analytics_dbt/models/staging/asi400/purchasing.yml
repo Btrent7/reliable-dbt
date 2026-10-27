@@ -1,0 +1,177 @@
+version: 2
+
+models:
+
+  - name: stg_asi400__po_lines
+    description: >
+      Staging model for AS400 purchase-order line records originating
+      from DPMORDM3. The model standardizes legacy source column names
+      while preserving the physical records available in the source.
+      Multiple physical source records may exist for the same logical
+      purchase-order line.
+
+    columns:
+      - name: po_number
+        description: Purchase order number.
+
+      - name: release_number
+        description: Purchase order release number.
+
+      - name: po_line_number
+        description: Purchase order line number.
+
+      - name: item_number
+        description: Item identifier associated with the purchase-order line.
+
+      - name: vendor_id
+        description: Vendor identifier from the purchase-order line.
+
+      - name: vendor_suffix
+        description: Vendor suffix from the purchase-order line.
+
+      - name: warehouse
+        description: Warehouse or plant identifier associated with the line.
+
+      - name: issued_date_key
+        description: >
+          Legacy integer issue-date key. Calendar translation is performed
+          downstream using the AS400 date staging model.
+
+      - name: received_date_key
+        description: >
+          Legacy integer receipt-date key. Calendar translation is performed
+          downstream using the AS400 date staging model.
+
+      - name: unit_price
+        description: Source purchase-order line unit price.
+
+      - name: authorized_quantity
+        description: Authorized quantity from the purchase-order line.
+
+      - name: received_quantity
+        description: Received quantity from the purchase-order line.
+
+      - name: vouched_quantity
+        description: Vouched quantity from the purchase-order line.
+
+      - name: cancelled_quantity
+        description: Cancelled quantity from the purchase-order line.
+
+      - name: unit_of_measure
+        description: Purchase-order line unit of measure.
+
+      - name: status
+        description: Source status value associated with the purchase-order line.
+
+
+  - name: stg_asi400__po_headers
+    description: >
+      Staging model for AS400 purchase-order header records originating
+      from DPMORDM0. The legacy source may contain multiple physical
+      header records associated with the same purchase order and release.
+
+    columns:
+      - name: company
+        description: Source company value associated with the purchase order.
+
+      - name: purchasing_group
+        description: Source purchasing-group value.
+
+      - name: po_number
+        description: Purchase order number.
+
+      - name: release_number
+        description: Purchase order release number.
+
+      - name: po_type
+        description: Purchase order type.
+
+      - name: po_status_code
+        description: Purchase order status code.
+
+      - name: vendor_id
+        description: Vendor identifier associated with the purchase-order header.
+
+      - name: vendor_suffix
+        description: Vendor suffix associated with the purchase-order header.
+
+      - name: issued_date_key
+        description: Legacy integer purchase-order issue-date key.
+
+      - name: created_date_key
+        description: Legacy integer purchase-order creation-date key.
+
+      - name: last_activity_date_key
+        description: Legacy integer key representing the last activity date.
+
+      - name: closed_date_key
+        description: Legacy integer purchase-order close-date key.
+
+      - name: buyer_id
+        description: Buyer identifier associated with the purchase order.
+
+      - name: original_purchase_amount
+        description: Original purchase amount stored on the source header.
+
+      - name: current_purchase_amount
+        description: Current purchase amount stored on the source header.
+
+      - name: current_invoice_amount
+        description: Current invoice amount stored on the source header.
+
+      - name: total_price_variance
+        description: Total price variance stored on the source header.
+
+      - name: price_variance_percent
+        description: Price variance percentage stored on the source header.
+
+      - name: status
+        description: Source status value associated with the purchase-order header.
+
+
+  - name: stg_asi400__voucher_lines
+    description: >
+      Staging model for AS400 voucher-detail records originating from
+      DPHVCH3. A voucher-detail record may reference a specific purchase
+      order, release, and purchase-order line. Source cancellation records
+      are preserved in staging so business scope can be applied downstream.
+
+    columns:
+      - name: voucher_number
+        description: Voucher identifier.
+
+      - name: voucher_line_number
+        description: Voucher detail line number.
+
+      - name: copy_sequence_number
+        description: Source copy-sequence number for the voucher detail.
+
+      - name: po_number
+        description: Purchase order referenced by the voucher detail.
+
+      - name: release_number
+        description: Purchase-order release referenced by the voucher detail.
+
+      - name: po_line_number
+        description: Purchase-order line referenced by the voucher detail.
+
+      - name: item_number
+        description: Item referenced by the voucher detail.
+
+      - name: vendor_item_number
+        description: Vendor item identifier stored on the voucher detail.
+
+      - name: item_quantity
+        description: Voucher-detail item quantity.
+
+      - name: unit_of_measure
+        description: Voucher-detail unit of measure.
+
+      - name: item_unit_price
+        description: Voucher-detail item unit price.
+
+      - name: item_gross_amount
+        description: Gross item amount stored on the source voucher detail.
+
+      - name: freight_amount
+        description: Freight amount stored on the voucher

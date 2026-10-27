@@ -1,0 +1,268 @@
+version: 2
+
+models:
+
+  - name: fct_purchase_orders
+    description: >
+      Business-ready purchasing fact table for finance, BI, and analytical
+      reporting. The model contains qualifying legacy AS400 voucher-detail
+      transactions associated with purchase-order lines.
+
+      The fact-table grain is one qualifying voucher-detail transaction
+      associated with one purchase-order line.
+
+      Source analysis identified row multiplication in the previous
+      purchasing query caused by incomplete join predicates. The dbt
+      transformation uses grain-aware relationships between purchase-order
+      headers, purchase-order lines, voucher headers, and voucher details.
+
+      The fact preserves quantity-times-price, source gross amount, and
+      source detail net amount as separate monetary measures rather than
+      treating them as interchangeable financial concepts.
+
+      Legacy secondary date keys are retained alongside mapped calendar
+      dates and mapping-status indicators for reconciliation and
+      data-quality monitoring.
+
+    columns:
+
+      - name: purchase_transaction_key
+        description: >
+          Deterministic surrogate key generated with dbt_utils from
+          voucher_number, voucher_line_number, copy_sequence_number,
+          po_number, release_number, and po_line_number. The source
+          identifiers remain available in the fact for auditing and
+          reconciliation.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: po_number
+        description: Purchase order number.
+        data_tests:
+          - not_null
+
+      - name: release_number
+        description: Purchase-order release number.
+        data_tests:
+          - not_null
+
+      - name: po_line_number
+        description: Purchase-order line number.
+        data_tests:
+          - not_null
+
+      - name: voucher_number
+        description: >
+          Voucher identifier linking the voucher-detail transaction to its
+          voucher header.
+        data_tests:
+          - not_null
+
+      - name: voucher_line_number
+        description: Voucher detail line number.
+        data_tests:
+          - not_null
+
+      - name: copy_sequence_number
+        description: >
+          Source copy-sequence number retained as part of the validated
+          transaction grain.
+        data_tests:
+          - not_null
+
+      - name: item_number
+        description: Item associated with the purchasing transaction.
+        data_tests:
+          - not_null
+
+      - name: item_description
+        description: Item description from the staged item master.
+
+      - name: item_class_code
+        description: >
+          Item classification code. This purchasing mart is restricted
+          to RSLE items.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['RSLE']
+
+      - name: product_group
+        description: Product group associated with the item.
+
+      - name: product_category
+        description: Product category associated with the item.
+
+      - name: commodity_code
+        description: Commodity code associated with the item.
+
+      - name: vendor_id
+        description: Vendor identifier associated with the purchase transaction.
+
+      - name: vendor_suffix
+        description: Vendor suffix associated with the purchase transaction.
+
+      - name: vendor_item_number
+        description: Vendor item identifier supplied by the voucher detail.
+
+      - name: warehouse
+        description: >
+          Warehouse associated with the purchase-order line. MFG records
+          are excluded from this purchasing mart.
+
+      - name: buyer_id
+        description: Buyer identifier supplied by the purchase-order header.
+
+      - name: po_type
+        description: Purchase-order type.
+
+      - name: po_status_code
+        description: Purchase-order status code.
+
+      - name: po_line_status
+        description: Source status associated with the purchase-order line.
+
+      - name: voucher_line_status
+        description: Source status associated with the voucher detail.
+
+      - name: issued_date_key
+        description: Legacy source purchase-order issue-date key.
+
+      - name: date_issued
+        description: >
+          Mapped purchase-order issue date. This value is required because
+          issue year defines inclusion in the purchasing mart.
+        data_tests:
+          - not_null
+
+      - name: received_date_key
+        description: Legacy source receipt-date key retained for reconciliation.
+
+      - name: date_received
+        description: >
+          Calendar receipt date when received_date_key successfully maps
+          through the existing date dimension.
+
+      - name: invoice_date_key
+        description: Legacy source invoice-date key retained for reconciliation.
+
+      - name: date_invoiced
+        description: >
+          Calendar invoice date when invoice_date_key successfully maps
+          through the existing date dimension.
+
+      - name: voucher_date_key
+        description: Legacy source voucher-date key retained for reconciliation.
+
+      - name: date_vouchered
+        description: >
+          Calendar voucher date when voucher_date_key successfully maps
+          through the existing date dimension.
+
+      - name: paid_date_key
+        description: Legacy source paid-date key retained for reconciliation.
+
+      - name: date_paid
+        description: >
+          Calendar paid date when paid_date_key successfully maps through
+          the existing date dimension.
+
+      - name: is_received_date_mapped
+        description: >
+          Indicator equal to 1 when received_date_key successfully maps
+          to a date-dimension record and 0 otherwise.
+
+      - name: is_invoice_date_mapped
+        description: >
+          Indicator equal to 1 when invoice_date_key successfully maps
+          to a date-dimension record and 0 otherwise.
+
+      - name: is_voucher_date_mapped
+        description: >
+          Indicator equal to 1 when voucher_date_key successfully maps
+          to a date-dimension record and 0 otherwise.
+
+      - name: is_paid_date_mapped
+        description: >
+          Indicator equal to 1 when paid_date_key successfully maps
+          to a date-dimension record and 0 otherwise.
+
+      - name: unit_of_measure
+        description: Purchase-order line unit of measure.
+
+      - name: unit_price
+        description: Purchase-order line unit price.
+
+      - name: authorized_quantity
+        description: Authorized quantity from the purchase-order line.
+
+      - name: received_quantity
+        description: Received quantity from the purchase-order line.
+
+      - name: vouched_quantity
+        description: Vouched quantity from the purchase-order line.
+
+      - name: cancelled_quantity
+        description: Cancelled quantity from the purchase-order line.
+
+      - name: voucher_unit_of_measure
+        description: Unit of measure associated with the voucher detail.
+
+      - name: voucher_item_quantity
+        description: Item quantity associated with the voucher detail.
+
+      - name: voucher_item_unit_price
+        description: Item unit price associated with the voucher detail.
+
+      - name: voucher_extended_amount
+        description: >
+          Calculated voucher-detail extended amount equal to
+          voucher_item_quantity multiplied by voucher_item_unit_price.
+          This field is intentionally distinct from item_gross_amount
+          and detail_net_amount.
+        data_tests:
+          - not_null
+
+      - name: item_gross_amount
+        description: Gross item amount supplied by the source voucher detail.
+
+      - name: freight_amount
+        description: Freight amount supplied by the voucher detail.
+
+      - name: tax_amount
+        description: Tax amount supplied by the voucher detail.
+
+      - name: discount_amount
+        description: Discount amount supplied by the voucher detail.
+
+      - name: detail_net_amount
+        description: Net/detail amount supplied by the voucher detail.
+
+      - name: invoice_number
+        description: Invoice identifier supplied by the voucher header.
+
+      - name: invoice_item_amount
+        description: Item amount supplied by the voucher header.
+
+      - name: invoice_freight_amount
+        description: Freight amount supplied by the voucher header.
+
+      - name: invoice_tax_amount
+        description: Tax amount supplied by the voucher header.
+
+      - name: invoice_discount_amount
+        description: Discount amount supplied by the voucher header.
+
+      - name: check_amount
+        description: Check amount supplied by the voucher header.
+
+      - name: accounting_period
+        description: Accounting period supplied by the voucher header.
+
+      - name: item_charge_to_indicator
+        description: Source item charge-to indicator.
+
+      - name: item_charge_to_account
+        description: Source item charge-to account.
